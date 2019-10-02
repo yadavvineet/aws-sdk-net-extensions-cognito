@@ -90,7 +90,7 @@ namespace Amazon.Extensions.CognitoAuthentication
                            IDictionary<string, string> userAttributes,
                            IDictionary<string, string> validationData)
         {
-            SignUpRequest signUpUserRequest = CreateSignUpRequest(userID, password, userAttributes, validationData);
+            var signUpUserRequest = CreateSignUpRequest(userID, password, userAttributes, validationData);
 
             return Provider.SignUpAsync(signUpUserRequest);
         }
@@ -118,11 +118,11 @@ namespace Amazon.Extensions.CognitoAuthentication
                 throw new ArgumentNullException("userAttributes", "userAttributes cannot be null.");
             }
 
-            List<AttributeType> validationDataList = 
+            var validationDataList = 
                 validationData != null ? CognitoAuthHelper.CreateAttributeList(validationData) : null;
 
             // Create User registration request
-            SignUpRequest signUpUserRequest = new SignUpRequest()
+            var signUpUserRequest = new SignUpRequest()
             {
                 Username = userID,
                 Password = password,
@@ -255,7 +255,7 @@ namespace Amazon.Extensions.CognitoAuthentication
                            IDictionary<string, string> userAttributes,
                            IDictionary<string, string> validationData)
         {
-            AdminCreateUserRequest signUpUserRequest = CreateAdminSignUpRequest(userID, userAttributes, validationData);
+            var signUpUserRequest = CreateAdminSignUpRequest(userID, userAttributes, validationData);
 
             return Provider.AdminCreateUserAsync(signUpUserRequest);
         }
@@ -281,7 +281,7 @@ namespace Amazon.Extensions.CognitoAuthentication
                 throw new ArgumentNullException(nameof(userAttributes), "userAttributes cannot be null.");
             }
 
-            List<AttributeType> validationDataList =
+            var validationDataList =
                 validationData != null ? CognitoAuthHelper.CreateAttributeList(validationData) : null;
 
             // Create User registration request

@@ -27,7 +27,7 @@ namespace Amazon.Extensions.CognitoAuthentication.IntegrationTests
     {
         public AuthenticationCreateUserTests() : base()
         {
-            AdminCreateUserRequest createUserRequest = new AdminCreateUserRequest()
+            var createUserRequest = new AdminCreateUserRequest()
             {
                 TemporaryPassword = "PassWord1!",
                 Username = "User5",
@@ -42,7 +42,7 @@ namespace Amazon.Extensions.CognitoAuthentication.IntegrationTests
                 UserPoolId = pool.PoolID
             };
 
-            AdminCreateUserResponse createReponse = provider.AdminCreateUserAsync(createUserRequest).Result;
+            var createReponse = provider.AdminCreateUserAsync(createUserRequest).Result;
 
             user = new CognitoUser("User5", pool.ClientID, pool, provider);
         }
@@ -51,9 +51,9 @@ namespace Amazon.Extensions.CognitoAuthentication.IntegrationTests
         [Fact]
         public async Task TestNewPasswordRequiredFlow()
         {
-            string password = "PassWord1!";
+            var password = "PassWord1!";
 
-            AuthFlowResponse context =
+            var context =
                 await user.StartWithSrpAuthAsync(new InitiateSrpAuthRequest()
                 {
                     Password = password

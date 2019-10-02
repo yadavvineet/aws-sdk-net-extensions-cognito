@@ -26,7 +26,7 @@ namespace Amazon.Extensions.CognitoAuthentication.IntegrationTests
     {
         public AuthenticationConfirmUserTests() : base()
         {
-            SignUpRequest signUpRequest = new SignUpRequest()
+            var signUpRequest = new SignUpRequest()
             {
                 ClientId = pool.ClientID,
                 Password = "PassWord1!",
@@ -41,14 +41,14 @@ namespace Amazon.Extensions.CognitoAuthentication.IntegrationTests
                 }
             };
 
-            SignUpResponse signUpResponse = provider.SignUpAsync(signUpRequest).Result;
+            var signUpResponse = provider.SignUpAsync(signUpRequest).Result;
 
-            AdminConfirmSignUpRequest confirmRequest = new AdminConfirmSignUpRequest()
+            var confirmRequest = new AdminConfirmSignUpRequest()
             {
                 Username = "User5",
                 UserPoolId = pool.PoolID
             };
-            AdminConfirmSignUpResponse confirmResponse = provider.AdminConfirmSignUpAsync(confirmRequest).Result;
+            var confirmResponse = provider.AdminConfirmSignUpAsync(confirmRequest).Result;
             user = new CognitoUser("User5", pool.ClientID, pool, provider);
         }
 
@@ -56,9 +56,9 @@ namespace Amazon.Extensions.CognitoAuthentication.IntegrationTests
         [Fact]
         public async void TestGenericSrpAuthentication()
         {
-            string password = "PassWord1!";
+            var password = "PassWord1!";
 
-            AuthFlowResponse context =
+            var context =
                 await user.StartWithSrpAuthAsync(new InitiateSrpAuthRequest()
                 {
                     Password = password
@@ -71,22 +71,22 @@ namespace Amazon.Extensions.CognitoAuthentication.IntegrationTests
         [Fact]
         public async Task TestDeleteUser()
         {
-            string userID = user.UserID;
-            List<string> users = new List<string>();
+            var userID = user.UserID;
+            var users = new List<string>();
 
-            AuthFlowResponse context =
+            var context =
                 await user.StartWithSrpAuthAsync(new InitiateSrpAuthRequest()
                 {
                     Password = "PassWord1!"
                 }).ConfigureAwait(false);
 
-            ListUsersRequest listUsersRequest = new ListUsersRequest()
+            var listUsersRequest = new ListUsersRequest()
             {
                 Limit = 60,
                 UserPoolId = pool.PoolID
             };
-            ListUsersResponse listUsersReponse = await provider.ListUsersAsync(listUsersRequest).ConfigureAwait(false);
-            foreach (UserType listUser in listUsersReponse.Users)
+            var listUsersReponse = await provider.ListUsersAsync(listUsersRequest).ConfigureAwait(false);
+            foreach (var listUser in listUsersReponse.Users)
             {
                 users.Add(listUser.Username);
             }
@@ -97,7 +97,7 @@ namespace Amazon.Extensions.CognitoAuthentication.IntegrationTests
 
             listUsersReponse = await provider.ListUsersAsync(listUsersRequest).ConfigureAwait(false);
             users.Clear();
-            foreach(UserType listUser in listUsersReponse.Users)
+            foreach(var listUser in listUsersReponse.Users)
             {
                 users.Add(listUser.Username);
             }

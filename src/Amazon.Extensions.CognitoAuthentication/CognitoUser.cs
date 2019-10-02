@@ -165,7 +165,7 @@ namespace Amazon.Extensions.CognitoAuthentication
         /// <param name="forcedAliasCreation">Boolean specifying whether forced alias creation is desired</param>
         public Task ConfirmSignUpAsync(string confirmationCode, bool forcedAliasCreation)
         {
-            ConfirmSignUpRequest confirmRequest = CreateConfirmSignUpRequest(confirmationCode, forcedAliasCreation);
+            var confirmRequest = CreateConfirmSignUpRequest(confirmationCode, forcedAliasCreation);
 
             return Provider.ConfirmSignUpAsync(confirmRequest);
         }
@@ -176,7 +176,7 @@ namespace Amazon.Extensions.CognitoAuthentication
         /// <returns>Returns the delivery details for the confirmation code request</returns>
         public Task ResendConfirmationCodeAsync()
         {
-            ResendConfirmationCodeRequest resendRequest = CreateResendConfirmationCodeRequest();
+            var resendRequest = CreateResendConfirmationCodeRequest();
 
             return Provider.ResendConfirmationCodeAsync(resendRequest);
         }
@@ -187,7 +187,7 @@ namespace Amazon.Extensions.CognitoAuthentication
         /// </summary>
         public Task ForgotPasswordAsync()
         {
-            ForgotPasswordRequest forgotPassRequest = CreateForgotPasswordRequest();
+            var forgotPassRequest = CreateForgotPasswordRequest();
 
             return Provider.ForgotPasswordAsync(forgotPassRequest);
         }
@@ -200,7 +200,7 @@ namespace Amazon.Extensions.CognitoAuthentication
         /// <param name="newPassword">The new desired password for the user</param>
         public Task ConfirmForgotPasswordAsync(string confirmationCode, string newPassword)
         {
-            ConfirmForgotPasswordRequest confirmResetPassRequest =
+            var confirmResetPassRequest =
                 CreateConfirmPasswordRequest(confirmationCode, newPassword);
 
             return Provider.ConfirmForgotPasswordAsync(confirmResetPassRequest);
@@ -214,7 +214,7 @@ namespace Amazon.Extensions.CognitoAuthentication
         /// <param name="newPass">The desired new password</param>
         public Task ChangePasswordAsync(string oldPass, string newPass)
         {
-            ChangePasswordRequest changePassRequest = CreateChangePasswordRequest(oldPass, newPass);
+            var changePassRequest = CreateChangePasswordRequest(oldPass, newPass);
 
             return Provider.ChangePasswordAsync(changePassRequest);
         }
@@ -227,7 +227,7 @@ namespace Amazon.Extensions.CognitoAuthentication
         {
             EnsureUserAuthenticated();
 
-            GetUserRequest getUserRequest = new GetUserRequest()
+            var getUserRequest = new GetUserRequest()
             {
                 AccessToken = SessionTokens.AccessToken
             };
@@ -244,7 +244,7 @@ namespace Amazon.Extensions.CognitoAuthentication
         /// <returns>Returns the delivery details for the attribute verification code request</returns>
         public Task GetAttributeVerificationCodeAsync(string medium)
         {
-            GetUserAttributeVerificationCodeRequest getAttributeCodeRequest =
+            var getAttributeCodeRequest =
                     CreateGetUserAttributeVerificationCodeRequest(medium);
 
             return Provider.GetUserAttributeVerificationCodeAsync(getAttributeCodeRequest);
@@ -257,7 +257,7 @@ namespace Amazon.Extensions.CognitoAuthentication
         {
             EnsureUserAuthenticated();
 
-            GlobalSignOutRequest globalSignOutRequest = new GlobalSignOutRequest()
+            var globalSignOutRequest = new GlobalSignOutRequest()
             {
                 AccessToken = SessionTokens.AccessToken
             };
@@ -273,7 +273,7 @@ namespace Amazon.Extensions.CognitoAuthentication
         {
             EnsureUserAuthenticated();
 
-            DeleteUserRequest deleteUserRequest = new DeleteUserRequest()
+            var deleteUserRequest = new DeleteUserRequest()
             {
                 AccessToken = SessionTokens.AccessToken
             };
@@ -288,7 +288,7 @@ namespace Amazon.Extensions.CognitoAuthentication
         /// <param name="verificationCode">The verification code for the attribute being verified</param>
         public Task VerifyAttributeAsync(string attributeName, string verificationCode)
         {
-            VerifyUserAttributeRequest verifyUserAttributeRequest =
+            var verifyUserAttributeRequest =
                 CreateVerifyUserAttributeRequest(attributeName, verificationCode);
 
             return Provider.VerifyUserAttributeAsync(verifyUserAttributeRequest);
@@ -301,13 +301,13 @@ namespace Amazon.Extensions.CognitoAuthentication
         /// <param name="attributes">The attributes to be updated</param>
         public async Task UpdateAttributesAsync(IDictionary<string, string> attributes)
         {
-            UpdateUserAttributesRequest updateUserAttributesRequest =
+            var updateUserAttributesRequest =
                 CreateUpdateUserAttributesRequest(attributes);
 
             await Provider.UpdateUserAttributesAsync(updateUserAttributesRequest).ConfigureAwait(false);
 
             //Update the local Attributes property
-            foreach (KeyValuePair<string, string> entry in attributes)
+            foreach (var entry in attributes)
             {
                 Attributes[entry.Key] = entry.Value;
             }
@@ -320,13 +320,13 @@ namespace Amazon.Extensions.CognitoAuthentication
         /// <param name="attributeNamesToDelete">List of attributes to delete</param>
         public async Task DeleteAttributesAsync(IList<string> attributeNamesToDelete)
         {
-            DeleteUserAttributesRequest deleteUserAttributesRequest =
+            var deleteUserAttributesRequest =
                 CreateDeleteUserAttributesRequest(attributeNamesToDelete);
 
             await Provider.DeleteUserAttributesAsync(deleteUserAttributesRequest).ConfigureAwait(false);
 
             //Update the local Attributes property
-            foreach (string attribute in attributeNamesToDelete)
+            foreach (var attribute in attributeNamesToDelete)
             {
                 if (Attributes.ContainsKey(attribute))
                 {
@@ -342,12 +342,12 @@ namespace Amazon.Extensions.CognitoAuthentication
         /// <param name="userSettings">Dictionary for the user MFA settings of the form [attribute, delivery medium]</param>
         public async Task SetUserSettingsAsync(IDictionary<string, string> userSettings)
         {
-            SetUserSettingsRequest setUserSettingsRequest = CreateSetUserSettingsRequest(userSettings);
+            var setUserSettingsRequest = CreateSetUserSettingsRequest(userSettings);
 
             await Provider.SetUserSettingsAsync(setUserSettingsRequest).ConfigureAwait(false);
 
             //Update the local Settings property
-            foreach (KeyValuePair<string, string> entry in userSettings)
+            foreach (var entry in userSettings)
             {
                 Settings[entry.Key] = entry.Value;
             }
@@ -361,11 +361,11 @@ namespace Amazon.Extensions.CognitoAuthentication
         /// <returns>Returns a list of CognitoDevices associated with this user</returns>
         public async Task<List<CognitoDevice>> ListDevicesAsync(int limit, string paginationToken)
         {
-            ListDevicesRequest listDevicesRequest = CreateListDevicesRequest(limit, paginationToken);
-            ListDevicesResponse listDevicesReponse = await Provider.ListDevicesAsync(listDevicesRequest).ConfigureAwait(false);
-            List<CognitoDevice> devicesList = new List<CognitoDevice>();
+            var listDevicesRequest = CreateListDevicesRequest(limit, paginationToken);
+            var listDevicesReponse = await Provider.ListDevicesAsync(listDevicesRequest).ConfigureAwait(false);
+            var devicesList = new List<CognitoDevice>();
 
-            foreach (DeviceType device in listDevicesReponse.Devices)
+            foreach (var device in listDevicesReponse.Devices)
             {
                 devicesList.Add(new CognitoDevice(device, this));
             }
@@ -375,7 +375,7 @@ namespace Amazon.Extensions.CognitoAuthentication
 
         private ConfirmSignUpRequest CreateConfirmSignUpRequest(string confirmationCode, bool forcedAliasCreation)
         {
-            ConfirmSignUpRequest confirmRequest = new ConfirmSignUpRequest()
+            var confirmRequest = new ConfirmSignUpRequest()
             {
                 ClientId = ClientID,
                 Username = Username,
@@ -393,7 +393,7 @@ namespace Amazon.Extensions.CognitoAuthentication
 
         private ResendConfirmationCodeRequest CreateResendConfirmationCodeRequest()
         {
-            ResendConfirmationCodeRequest resendRequest = new ResendConfirmationCodeRequest()
+            var resendRequest = new ResendConfirmationCodeRequest()
             {
                 Username = Username,
                 ClientId = ClientID
@@ -409,7 +409,7 @@ namespace Amazon.Extensions.CognitoAuthentication
 
         private ForgotPasswordRequest CreateForgotPasswordRequest()
         {
-            ForgotPasswordRequest forgotPassRequest = new ForgotPasswordRequest()
+            var forgotPassRequest = new ForgotPasswordRequest()
             {
                 ClientId = ClientID,
                 Username = Username
@@ -425,7 +425,7 @@ namespace Amazon.Extensions.CognitoAuthentication
 
         private ConfirmForgotPasswordRequest CreateConfirmPasswordRequest(string confirmationCode, string newPassword)
         {
-            ConfirmForgotPasswordRequest confirmResetPassRequest = new ConfirmForgotPasswordRequest()
+            var confirmResetPassRequest = new ConfirmForgotPasswordRequest()
             {
                 Username = Username,
                 ClientId = ClientID,
@@ -445,7 +445,7 @@ namespace Amazon.Extensions.CognitoAuthentication
         {
             EnsureUserAuthenticated();
 
-            ChangePasswordRequest changePassRequest = new ChangePasswordRequest()
+            var changePassRequest = new ChangePasswordRequest()
             {
                 PreviousPassword = oldPass,
                 ProposedPassword = newPass,
@@ -459,7 +459,7 @@ namespace Amazon.Extensions.CognitoAuthentication
         {
             EnsureUserAuthenticated();
 
-            GetUserAttributeVerificationCodeRequest getAttributeCodeRequest = new GetUserAttributeVerificationCodeRequest()
+            var getAttributeCodeRequest = new GetUserAttributeVerificationCodeRequest()
             {
                 AccessToken = SessionTokens.AccessToken,
                 AttributeName = attributeName
@@ -477,10 +477,10 @@ namespace Amazon.Extensions.CognitoAuthentication
         /// <returns>Returns a CognitoUserSession based on the authentication result</returns>
         private CognitoUserSession GetCognitoUserSession(AuthenticationResultType authResult, string refreshTokenOverride = null)
         {
-            string idToken = authResult.IdToken;
-            string accessToken = authResult.AccessToken;
+            var idToken = authResult.IdToken;
+            var accessToken = authResult.AccessToken;
             string refreshToken;
-            DateTime currentTime = DateTime.Now;
+            var currentTime = DateTime.Now;
 
             if (!string.IsNullOrEmpty(refreshTokenOverride))
             {
@@ -506,7 +506,7 @@ namespace Amazon.Extensions.CognitoAuthentication
         {
             EnsureUserAuthenticated();
 
-            VerifyUserAttributeRequest verifyUserAttributeRequest = new VerifyUserAttributeRequest()
+            var verifyUserAttributeRequest = new VerifyUserAttributeRequest()
             {
                 AttributeName = attributeName,
                 AccessToken = SessionTokens.AccessToken,
@@ -520,7 +520,7 @@ namespace Amazon.Extensions.CognitoAuthentication
         {
             EnsureUserAuthenticated();
 
-            UpdateUserAttributesRequest updateUserAttributesRequest = new UpdateUserAttributesRequest()
+            var updateUserAttributesRequest = new UpdateUserAttributesRequest()
             {
                 AccessToken = SessionTokens.AccessToken,
                 UserAttributes = CognitoAuthHelper.CreateAttributeList(attributes)
@@ -538,7 +538,7 @@ namespace Amazon.Extensions.CognitoAuthentication
 
             EnsureUserAuthenticated();
 
-            DeleteUserAttributesRequest deleteUserAttributesRequest = new DeleteUserAttributesRequest()
+            var deleteUserAttributesRequest = new DeleteUserAttributesRequest()
             {
                 AccessToken = SessionTokens.AccessToken,
                 UserAttributeNames = new List<string>(attributeNamesToDelete)
@@ -556,13 +556,13 @@ namespace Amazon.Extensions.CognitoAuthentication
 
             EnsureUserAuthenticated();
 
-            List<MFAOptionType> settingsList = new List<MFAOptionType>();
-            foreach (KeyValuePair<string, string> setting in userSettings)
+            var settingsList = new List<MFAOptionType>();
+            foreach (var setting in userSettings)
             {
                 settingsList.Add(new MFAOptionType() { AttributeName = setting.Key, DeliveryMedium = setting.Value });
             }
 
-            SetUserSettingsRequest setUserSettingsRequest = new SetUserSettingsRequest()
+            var setUserSettingsRequest = new SetUserSettingsRequest()
             {
                 AccessToken = SessionTokens.AccessToken,
                 MFAOptions = settingsList
@@ -575,7 +575,7 @@ namespace Amazon.Extensions.CognitoAuthentication
         {
             EnsureUserAuthenticated();
 
-            ListDevicesRequest listDevicesRequest = new ListDevicesRequest()
+            var listDevicesRequest = new ListDevicesRequest()
             {
                 AccessToken = SessionTokens.AccessToken,
                 Limit = limit,

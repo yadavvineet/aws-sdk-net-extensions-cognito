@@ -158,9 +158,9 @@ namespace Amazon.Extensions.CognitoAuthentication
         /// </summary>
         public async Task GetDeviceAsync()
         {
-            GetDeviceRequest getDeviceRequest = CreateGetDeviceRequest();
+            var getDeviceRequest = CreateGetDeviceRequest();
 
-            GetDeviceResponse getDeviceResponse =
+            var getDeviceResponse =
                 await User.Provider.GetDeviceAsync(getDeviceRequest).ConfigureAwait(false);
 
             UpdateThisDevice(getDeviceResponse.Device);
@@ -172,7 +172,7 @@ namespace Amazon.Extensions.CognitoAuthentication
         /// </summary>
         public Task ForgetDeviceAsync()
         {
-            ForgetDeviceRequest forgetDeviceRequest = CreateForgetDeviceRequest();
+            var forgetDeviceRequest = CreateForgetDeviceRequest();
             return User.Provider.ForgetDeviceAsync(forgetDeviceRequest);
         }
 
@@ -181,7 +181,7 @@ namespace Amazon.Extensions.CognitoAuthentication
         /// </summary>
         public Task RememberThisDeviceAsync()
         {
-            UpdateDeviceStatusRequest updateRequest =
+            var updateRequest =
                 CreateUpdateDeviceStatusRequest(new DeviceRememberedStatusType(CognitoConstants.DeviceAttrRemembered));
 
             return User.Provider.UpdateDeviceStatusAsync(updateRequest);
@@ -192,7 +192,7 @@ namespace Amazon.Extensions.CognitoAuthentication
         /// </summary>
         public Task DoNotRememberThisDeviceAsync()
         {
-            UpdateDeviceStatusRequest updateRequest =
+            var updateRequest =
                     CreateUpdateDeviceStatusRequest(new DeviceRememberedStatusType(CognitoConstants.DeviceAttrNotRemembered));
 
             return User.Provider.UpdateDeviceStatusAsync(updateRequest);
@@ -205,7 +205,7 @@ namespace Amazon.Extensions.CognitoAuthentication
                 throw new NotAuthorizedException("User is not authorized.");
             }
 
-            GetDeviceRequest getDeviceRequest = new GetDeviceRequest()
+            var getDeviceRequest = new GetDeviceRequest()
             {
                 AccessToken = User.SessionTokens.AccessToken,
                 DeviceKey = DeviceKey
@@ -242,7 +242,7 @@ namespace Amazon.Extensions.CognitoAuthentication
                 throw new NotAuthorizedException("User is not authorized.");
             }
 
-            ForgetDeviceRequest forgetDeviceRequest = new ForgetDeviceRequest()
+            var forgetDeviceRequest = new ForgetDeviceRequest()
             {
                 AccessToken = User.SessionTokens.AccessToken,
                 DeviceKey = DeviceKey
@@ -258,7 +258,7 @@ namespace Amazon.Extensions.CognitoAuthentication
                 throw new NotAuthorizedException("User is not authorized.");
             }
 
-            UpdateDeviceStatusRequest updateDeviceStatusRequest = new UpdateDeviceStatusRequest()
+            var updateDeviceStatusRequest = new UpdateDeviceStatusRequest()
             {
                 AccessToken = User.SessionTokens.AccessToken,
                 DeviceKey = DeviceKey,
@@ -275,9 +275,9 @@ namespace Amazon.Extensions.CognitoAuthentication
         /// <returns></returns>
         private Dictionary<string,string> CreateDictionaryFromAttributeList(IList<AttributeType> attributes)
         {
-            Dictionary<string, string> attributesDict = new Dictionary<string, string>();
+            var attributesDict = new Dictionary<string, string>();
 
-            foreach(AttributeType attribute in attributes)
+            foreach(var attribute in attributes)
             {
                 attributesDict.Add(attribute.Name, attribute.Value);
             }

@@ -38,18 +38,18 @@ namespace CognitoAuthentication.IntegrationTests.NET45
         private string identityPoolId;
 
         private AmazonCognitoIdentityClient identityClient;
-        AWSCredentials clientCredentials = FallbackCredentialsFactory.GetCredentials();
+        readonly AWSCredentials clientCredentials = FallbackCredentialsFactory.GetCredentials();
         private AmazonIdentityManagementServiceClient managementClient;
 
         [Fact]
         //Tests GetCognitoAWSCredentials
         public async void TestGetCognitoAWSCredentials()
         {
-            string password = "PassWord1!";
-            string poolRegion = user.UserPool.PoolID.Substring(0, user.UserPool.PoolID.IndexOf("_"));
-            string providerName = "cognito-idp." + poolRegion + ".amazonaws.com/" + user.UserPool.PoolID;
+            var password = "PassWord1!";
+            var poolRegion = user.UserPool.PoolID.Substring(0, user.UserPool.PoolID.IndexOf("_", StringComparison.Ordinal));
+            var providerName = "cognito-idp." + poolRegion + ".amazonaws.com/" + user.UserPool.PoolID;
 
-            AuthFlowResponse context =
+            var context =
                 await user.StartWithSrpAuthAsync(new InitiateSrpAuthRequest()
                 {
                     Password = password
@@ -57,7 +57,7 @@ namespace CognitoAuthentication.IntegrationTests.NET45
 
             //Create identity pool
             identityClient = new AmazonCognitoIdentityClient(clientCredentials, clientRegion);
-            CreateIdentityPoolResponse poolResponse =
+            var poolResponse =
                 await identityClient.CreateIdentityPoolAsync(new CreateIdentityPoolRequest()
                 {
                     AllowUnauthenticatedIdentities = false,
@@ -72,7 +72,7 @@ namespace CognitoAuthentication.IntegrationTests.NET45
 
             //Create role for identity pool
             managementClient = new AmazonIdentityManagementServiceClient(clientCredentials, clientRegion);
-            CreateRoleResponse roleResponse = managementClient.CreateRoleAsync(new CreateRoleRequest()
+            var roleResponse = managementClient.CreateRoleAsync(new CreateRoleRequest()
             {
                 RoleName = "_TestRole_" + DateTime.Now.ToString("yyyyMMdd_HHmmss"),
                 AssumeRolePolicyDocument = "{\"Version\": \"2012-10-17\",\"Statement\": [{\"Effect" +
@@ -82,7 +82,7 @@ namespace CognitoAuthentication.IntegrationTests.NET45
             roleName = roleResponse.Role.RoleName;
 
             //Create and attach policy for role
-            CreatePolicyResponse policyResponse = managementClient.CreatePolicyAsync(new CreatePolicyRequest()
+            var policyResponse = managementClient.CreatePolicyAsync(new CreatePolicyRequest()
             {
                 PolicyDocument = "{\"Version\": \"2012-10-17\",\"Statement\": " +
                 "[{\"Effect\": \"Allow\",\"Action\": [\"mobileanalytics:PutEvents\",\"cog" +
@@ -91,12 +91,12 @@ namespace CognitoAuthentication.IntegrationTests.NET45
             }).Result;
             policyArn = policyResponse.Policy.Arn;
 
-            AttachRolePolicyRequest attachRequest = new AttachRolePolicyRequest()
+            var attachRequest = new AttachRolePolicyRequest()
             {
                 PolicyArn = policyArn,
                 RoleName = roleName
             };
-            AttachRolePolicyResponse attachRolePolicyResponse = managementClient.AttachRolePolicyAsync(attachRequest).Result;
+            var attachRolePolicyResponse = managementClient.AttachRolePolicyAsync(attachRequest).Result;
 
             //Set the role for the identity pool
             await identityClient.SetIdentityPoolRolesAsync(new SetIdentityPoolRolesRequest()
@@ -110,12 +110,12 @@ namespace CognitoAuthentication.IntegrationTests.NET45
             }).ConfigureAwait(false);
 
             //Create and test credentials
-            CognitoAWSCredentials credentials = user.GetCognitoAWSCredentials(identityPoolId, clientRegion);
+            var credentials = user.GetCognitoAWSCredentials(identityPoolId, clientRegion);
 
             using (var client = new AmazonS3Client(credentials, Amazon.RegionEndpoint.USEast1))
             {
-                int tries = 0;
-                string bufferExMsg = "Invalid identity pool configuration. Check assigned IAM roles for this pool.";
+                var tries = 0;
+                var bufferExMsg = "Invalid identity pool configuration. Check assigned IAM roles for this pool.";
                 ListBucketsResponse bucketsResponse = null;
 
                 for (; tries < 5; tries++)

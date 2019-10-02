@@ -39,13 +39,13 @@ namespace Amazon.Extensions.CognitoAuthentication.IntegrationTests
 
         public BaseAuthenticationTestClass()
         {
-            UserPoolPolicyType passwordPolicy = new UserPoolPolicyType();
-            List<SchemaAttributeType> requiredAttributes = new List<SchemaAttributeType>();
-            List<string> verifiedAttributes = new List<string>();
+            var passwordPolicy = new UserPoolPolicyType();
+            var requiredAttributes = new List<SchemaAttributeType>();
+            var verifiedAttributes = new List<string>();
 
             provider = new AmazonCognitoIdentityProviderClient();
 
-            AdminCreateUserConfigType adminCreateUser = new AdminCreateUserConfigType()
+            var adminCreateUser = new AdminCreateUserConfigType()
             {
                 UnusedAccountValidityDays = 8,
                 AllowAdminCreateUserOnly = false
@@ -60,7 +60,7 @@ namespace Amazon.Extensions.CognitoAuthentication.IntegrationTests
                 RequireLowercase = true
             };
 
-            SchemaAttributeType tempSchema = new SchemaAttributeType()
+            var tempSchema = new SchemaAttributeType()
             {
                 Required = true,
                 Name = CognitoConstants.UserAttrEmail,
@@ -69,7 +69,7 @@ namespace Amazon.Extensions.CognitoAuthentication.IntegrationTests
             requiredAttributes.Add(tempSchema);
             verifiedAttributes.Add(CognitoConstants.UserAttrEmail);
 
-            CreateUserPoolRequest createPoolRequest = new CreateUserPoolRequest
+            var createPoolRequest = new CreateUserPoolRequest
             {
                 PoolName = "testPool_" + DateTime.Now.ToString("yyyyMMdd_HHmmss"),
                 Policies = passwordPolicy,
@@ -83,18 +83,18 @@ namespace Amazon.Extensions.CognitoAuthentication.IntegrationTests
                     DeviceOnlyRememberedOnUserPrompt = false
                 }
             };
-            CreateUserPoolResponse createPoolResponse = provider.CreateUserPoolAsync(createPoolRequest).Result;
-            UserPoolType userPoolCreated = createPoolResponse.UserPool;
+            var createPoolResponse = provider.CreateUserPoolAsync(createPoolRequest).Result;
+            var userPoolCreated = createPoolResponse.UserPool;
 
-            CreateUserPoolClientRequest clientRequest = new CreateUserPoolClientRequest()
+            var clientRequest = new CreateUserPoolClientRequest()
             {
                 ClientName = "App_" + DateTime.Now.ToString("yyyyMMdd_HHmmss"),
                 UserPoolId = userPoolCreated.Id,
                 GenerateSecret = false,
 
             };
-            CreateUserPoolClientResponse clientResponse = provider.CreateUserPoolClientAsync(clientRequest).Result;
-            UserPoolClientType clientCreated = clientResponse.UserPoolClient;
+            var clientResponse = provider.CreateUserPoolClientAsync(clientRequest).Result;
+            var clientCreated = clientResponse.UserPoolClient;
 
             pool = new CognitoUserPool(userPoolCreated.Id, clientCreated.ClientId, provider, "");
         }
