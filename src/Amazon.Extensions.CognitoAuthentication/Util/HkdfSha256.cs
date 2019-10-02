@@ -66,17 +66,17 @@ namespace Amazon.Extensions.CognitoAuthentication
                 throw new ArgumentException("Length must be <= " + HLen * 255);
             }
 
-            byte[] outputKeyMaterial = new byte[length];
+            var outputKeyMaterial = new byte[length];
             HmacSha256 = new HMACSHA256(Prk);
 
             byte currentByte = 1;
-            byte[] hashedBlock = new byte[0];
+            var hashedBlock = new byte[0];
             byte[] currentBlock;
-            int bytesRemaining = length; 
+            var bytesRemaining = length; 
 
             while(bytesRemaining > 0)
             {
-                currentBlock = CognitoAuthHelper.CombineBytes(new byte[][] { hashedBlock, info, new byte[] { currentByte } });
+                currentBlock = CognitoAuthHelper.CombineBytes(new[] { hashedBlock, info, new[] { currentByte } });
                 hashedBlock = HmacSha256.ComputeHash(currentBlock);
 
                 Buffer.BlockCopy(hashedBlock, 0, outputKeyMaterial, length-bytesRemaining, Math.Min(hashedBlock.Length, bytesRemaining));

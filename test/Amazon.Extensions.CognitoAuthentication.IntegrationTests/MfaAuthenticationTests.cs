@@ -28,18 +28,18 @@ namespace Amazon.Extensions.CognitoAuthentication.IntegrationTests
 {
     public class MfaAuthenticationTests : BaseAuthenticationTestClass
     {
-        private string policyArn;
+        private readonly string policyArn;
         private string policyName;
-        private string roleArn;
-        private string roleName;
+        private readonly string roleArn;
+        private readonly string roleName;
 
         //Tests MFA authentication flow
         [Fact]
         public async void TestMfaAuthenticationFlow()
         {
-            string password = "PassWord1!";
+            var password = "PassWord1!";
 
-            AuthFlowResponse context =
+            var context =
                 await user.StartWithSrpAuthAsync(new InitiateSrpAuthRequest()
                 {
                     Password = password
@@ -69,16 +69,16 @@ namespace Amazon.Extensions.CognitoAuthentication.IntegrationTests
                 }).Wait();
             }
 
-            UserPoolPolicyType passwordPolicy = new UserPoolPolicyType();
-            List<SchemaAttributeType> requiredAttributes = new List<SchemaAttributeType>();
-            List<string> verifiedAttributes = new List<string>();
+            var passwordPolicy = new UserPoolPolicyType();
+            var requiredAttributes = new List<SchemaAttributeType>();
+            var verifiedAttributes = new List<string>();
 
             var creds = FallbackCredentialsFactory.GetCredentials();
             var region = FallbackRegionFactory.GetRegionEndpoint();
 
             provider = new AmazonCognitoIdentityProviderClient(creds, region);
 
-            AdminCreateUserConfigType adminCreateUser = new AdminCreateUserConfigType()
+            var adminCreateUser = new AdminCreateUserConfigType()
             {
                 UnusedAccountValidityDays = 8,
                 AllowAdminCreateUserOnly = false
@@ -93,13 +93,13 @@ namespace Amazon.Extensions.CognitoAuthentication.IntegrationTests
                 RequireLowercase = true
             };
 
-            SchemaAttributeType emailSchema = new SchemaAttributeType()
+            var emailSchema = new SchemaAttributeType()
             {
                 Required = true,
                 Name = CognitoConstants.UserAttrEmail,
                 AttributeDataType = AttributeDataType.String
             };
-            SchemaAttributeType phoneSchema = new SchemaAttributeType()
+            var phoneSchema = new SchemaAttributeType()
             {
                 Required = true,
                 Name = CognitoConstants.UserAttrPhoneNumber,
@@ -113,7 +113,7 @@ namespace Amazon.Extensions.CognitoAuthentication.IntegrationTests
             //Create Role for MFA
             using (var managementClient = new AmazonIdentityManagementServiceClient())
             {
-                CreateRoleResponse roleResponse = managementClient.CreateRoleAsync(new CreateRoleRequest()
+                var roleResponse = managementClient.CreateRoleAsync(new CreateRoleRequest()
                 {
                     RoleName = "TestRole_" + DateTime.Now.ToString("yyyyMMdd_HHmmss"),
                     AssumeRolePolicyDocument = "{\"Version\":\"2012-10-17\",\"Statement\":[{\"Sid\":\"\",\"Effect\":\"Allow" +
@@ -125,7 +125,7 @@ namespace Amazon.Extensions.CognitoAuthentication.IntegrationTests
                 roleArn = roleResponse.Role.Arn;
 
                 //Create and attach policy for role
-                CreatePolicyResponse createPolicyResponse = managementClient.CreatePolicyAsync(new CreatePolicyRequest()
+                var createPolicyResponse = managementClient.CreatePolicyAsync(new CreatePolicyRequest()
                 {
                     PolicyDocument = "{\"Version\": \"2012-10-17\",\"Statement\": [{\"Effect\": \"Allow\",\"Action" +
                     "\": [\"sns:publish\"],\"Resource\": [\"*\"]}]}",
@@ -143,7 +143,7 @@ namespace Amazon.Extensions.CognitoAuthentication.IntegrationTests
             }
            
             //Create user pool and client
-            CreateUserPoolRequest createPoolRequest = new CreateUserPoolRequest
+            var createPoolRequest = new CreateUserPoolRequest
             {
                 PoolName = "mfaTestPool_" + DateTime.Now.ToString("yyyyMMdd_HHmmss"),
                 Policies = passwordPolicy,
@@ -160,7 +160,7 @@ namespace Amazon.Extensions.CognitoAuthentication.IntegrationTests
 
             //Build in buffer time for role/policy to be created
             CreateUserPoolResponse createPoolResponse = null;
-            string bufferExMsg = "Role does not have a trust relationship allowing Cognito to assume the role";
+            var bufferExMsg = "Role does not have a trust relationship allowing Cognito to assume the role";
             while (true)
             {
                 try
@@ -181,9 +181,9 @@ namespace Amazon.Extensions.CognitoAuthentication.IntegrationTests
                 }
              }
 
-            UserPoolType poolCreated = createPoolResponse.UserPool;
+            var poolCreated = createPoolResponse.UserPool;
 
-            CreateUserPoolClientResponse clientResponse = 
+            var clientResponse = 
                 provider.CreateUserPoolClientAsync(new CreateUserPoolClientRequest()
                 {
                     ClientName = "App1",
@@ -191,10 +191,10 @@ namespace Amazon.Extensions.CognitoAuthentication.IntegrationTests
                     GenerateSecret = false,
                 }).Result;
 
-            UserPoolClientType clientCreated = clientResponse.UserPoolClient;
+            var clientCreated = clientResponse.UserPoolClient;
             this.pool = new CognitoUserPool(poolCreated.Id, clientCreated.ClientId, provider, "");
 
-            SignUpRequest signUpRequest = new SignUpRequest()
+            var signUpRequest = new SignUpRequest()
             {
                 ClientId = clientCreated.ClientId,
                 Password = "PassWord1!",
@@ -211,14 +211,14 @@ namespace Amazon.Extensions.CognitoAuthentication.IntegrationTests
                 }
             };
 
-            SignUpResponse signUpResponse = provider.SignUpAsync(signUpRequest).Result;
+            var signUpResponse = provider.SignUpAsync(signUpRequest).Result;
 
-            AdminConfirmSignUpRequest confirmRequest = new AdminConfirmSignUpRequest()
+            var confirmRequest = new AdminConfirmSignUpRequest()
             {
                 Username = "User5",
                 UserPoolId = poolCreated.Id
             };
-            AdminConfirmSignUpResponse confirmResponse = provider.AdminConfirmSignUpAsync(confirmRequest).Result;
+            var confirmResponse = provider.AdminConfirmSignUpAsync(confirmRequest).Result;
 
             this.user = new CognitoUser("User5", clientCreated.ClientId, pool, provider);
         }

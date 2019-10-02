@@ -27,7 +27,7 @@ namespace Amazon.Extensions.CognitoAuthentication.IntegrationTests
     {
         public AuthenticationSignUpUserTests() : base()
         {
-            SignUpRequest signUpRequest = new SignUpRequest()
+            var signUpRequest = new SignUpRequest()
             {
                 ClientId = pool.ClientID,
                 Password = "PassWord1!",
@@ -42,7 +42,7 @@ namespace Amazon.Extensions.CognitoAuthentication.IntegrationTests
                 }
             };
 
-            SignUpResponse signUpResponse = provider.SignUpAsync(signUpRequest).Result;
+            var signUpResponse = provider.SignUpAsync(signUpRequest).Result;
             user = new CognitoUser("User5", pool.ClientID, pool, provider);
         }
 
@@ -50,28 +50,28 @@ namespace Amazon.Extensions.CognitoAuthentication.IntegrationTests
         [Fact]
         public async Task TestSignUpProcess()
         {
-            string userID = "User55";
-            string password = "PassWord1!";
-            Dictionary<string, string> userAttributes = new Dictionary<string, string>(StringComparer.Ordinal)
+            var userID = "User55";
+            var password = "PassWord1!";
+            var userAttributes = new Dictionary<string, string>(StringComparer.Ordinal)
             {
                 { CognitoConstants.UserAttrEmail, "xxx@yyy.zzz"}
             };
-            Dictionary<string, string> validationData = new Dictionary<string, string>(StringComparer.Ordinal)
+            var validationData = new Dictionary<string, string>(StringComparer.Ordinal)
             {
                 { CognitoConstants.UserAttrEmail, "xxx@yyy.zzz"}
             };
 
             await pool.SignUpAsync(userID, password, userAttributes, validationData).ConfigureAwait(false);
 
-            ListUsersRequest listUsersRequest = new ListUsersRequest()
+            var listUsersRequest = new ListUsersRequest()
             {
                 Limit = 2,
                 UserPoolId = pool.PoolID
             };
-            ListUsersResponse listUsersResponse = await provider.ListUsersAsync(listUsersRequest).ConfigureAwait(false);
-            bool containsUser55 = false;
+            var listUsersResponse = await provider.ListUsersAsync(listUsersRequest).ConfigureAwait(false);
+            var containsUser55 = false;
 
-            foreach (UserType user in listUsersResponse.Users)
+            foreach (var user in listUsersResponse.Users)
             {
                 if (string.Equals(user.Username, userID, StringComparison.Ordinal))
                 {

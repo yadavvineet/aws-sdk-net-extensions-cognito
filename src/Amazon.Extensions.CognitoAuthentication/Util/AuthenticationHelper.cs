@@ -116,40 +116,41 @@ namespace Amazon.Extensions.CognitoAuthentication.Util
         /// <param name="userPassword">Password of CognitoUser</param>
         /// <param name="poolName">PoolName of CognitoUserPool (part of poolID after "_")</param>
         /// <param name="Aa">Returned from TupleAa</param>
-        /// <param name="B">BigInteger SRPB from AWS ChallengeParameters</param>
+        /// <param name="b">BigInteger SRPB from AWS ChallengeParameters</param>
         /// <param name="salt">BigInteger salt from AWS ChallengeParameters</param>
         /// <returns>Returns the password authentication key for the SRP protocol</returns>
         public static byte[] GetPasswordAuthenticationKey(string userID, 
             string userPassword, 
             string poolName,
             Tuple<BigInteger, BigInteger> Aa, 
-            BigInteger B, 
+            BigInteger b, 
             BigInteger salt)
         {
             // Authenticate the password
             // u = H(A, B)
-            byte[] contentBytes = CognitoAuthHelper.CombineBytes(new [] { Aa.Item1.ToBigEndianByteArray(), B.ToBigEndianByteArray() });
-            byte[] digest = CognitoAuthHelper.Sha256.ComputeHash(contentBytes);
+            var contentBytes = CognitoAuthHelper.CombineBytes(new [] { Aa.Item1.ToBigEndianByteArray(), b.ToBigEndianByteArray() });
+            var digest = CognitoAuthHelper.Sha256.ComputeHash(contentBytes);
 
-            BigInteger u = BigIntegerExtensions.FromUnsignedBigEndian(digest);
+            var u = BigIntegerExtensions.FromUnsignedBigEndian(digest);
             if (u.Equals(BigInteger.Zero))
             {
                 throw new ArgumentException("Hash of A and B cannot be zero.");
             }
 
             // x = H(salt | H(poolName | userId | ":" | password))
-            byte[] userIdContent = CognitoAuthHelper.CombineBytes(new byte[][] { Encoding.UTF8.GetBytes(poolName), Encoding.UTF8.GetBytes(userID),
+            var userIdContent = CognitoAuthHelper.CombineBytes(new[]
+            { Encoding.UTF8.GetBytes(poolName), Encoding.UTF8.GetBytes(userID),
                                                 Encoding.UTF8.GetBytes(":"), Encoding.UTF8.GetBytes(userPassword)});
-            byte[] userIdHash = CognitoAuthHelper.Sha256.ComputeHash(userIdContent);
-            byte[] xBytes = CognitoAuthHelper.CombineBytes(new byte[][] { salt.ToBigEndianByteArray(), userIdHash });
+            var userIdHash = CognitoAuthHelper.Sha256.ComputeHash(userIdContent);
+            var xBytes = CognitoAuthHelper.CombineBytes(new[] { salt.ToBigEndianByteArray(), userIdHash });
 
-            byte[] xDigest = CognitoAuthHelper.Sha256.ComputeHash(xBytes);
-            BigInteger x = BigIntegerExtensions.FromUnsignedBigEndian(xDigest);
+            var xDigest = CognitoAuthHelper.Sha256.ComputeHash(xBytes);
+            var x = BigIntegerExtensions.FromUnsignedBigEndian(xDigest);
 
             // Use HKDF to get final password authentication key
-            var first = (B - k * BigInteger.ModPow(g, x, N)).TrueMod(N);
+            var first = (b - k * BigInteger.ModPow(g, x, N)).TrueMod(N);
             var second = BigInteger.ModPow(first, Aa.Item2 + u * x, N);
-            HkdfSha256 hkdfSha256 = new HkdfSha256(u.ToBigEndianByteArray(), second.ToBigEndianByteArray());
+            var hkdfSha256 = new HkdfSha256(u.ToBigEndianByteArray(), second.ToBigEndianByteArray());
             return hkdfSha256.Expand(Encoding.UTF8.GetBytes(DerivedKeyInfo), DerivedKeySizeBytes);
         }
 
