@@ -26,23 +26,13 @@ namespace Amazon.Extensions.CognitoAuthentication.Util
 {
     internal static class CognitoAuthHelper
     {
-        [ThreadStatic] private static SHA256 sha256 = null;
+        [ThreadStatic] private static SHA256 sha256;
 
         /// <summary>
         /// Property to access the thread-safe SHA256 member variable. 
         /// Creates a SHA256 instance if one does not exist.
         /// </summary>
-        internal static SHA256 Sha256
-        {
-            get
-            {
-                if (sha256 == null)
-                {
-                    sha256 = SHA256.Create();
-                }
-                return sha256;
-            }
-        }
+        internal static SHA256 Sha256 => sha256 ?? (sha256 = SHA256.Create());
 
         /// <summary>
         /// Computes the secret hash for the user pool using the corresponding userID, clientID, 
@@ -55,12 +45,12 @@ namespace Amazon.Extensions.CognitoAuthentication.Util
         /// userID, clientID, and client secret</returns>
         public static string GetUserPoolSecretHash(string userID, string clientID, string clientSecret)
         {
-            string message = userID + clientID;
-            byte[] keyBytes = Encoding.UTF8.GetBytes(clientSecret);
-            byte[] messageBytes = Encoding.UTF8.GetBytes(message);
+            var message = userID + clientID;
+            var keyBytes = Encoding.UTF8.GetBytes(clientSecret);
+            var messageBytes = Encoding.UTF8.GetBytes(message);
 
-            HMACSHA256 hmacSha256 = new HMACSHA256(keyBytes);
-            byte[] hashMessage = hmacSha256.ComputeHash(messageBytes);
+            var hmacSha256 = new HMACSHA256(keyBytes);
+            var hashMessage = hmacSha256.ComputeHash(messageBytes);
 
             return Convert.ToBase64String(hashMessage);
         }
@@ -72,18 +62,18 @@ namespace Amazon.Extensions.CognitoAuthentication.Util
         /// <returns>Returns a byte array which combines all of the byte[] in values</returns>
         internal static byte[] CombineBytes(byte[][] values)
         {
-            int combinedLength = 0;
+            var combinedLength = 0;
             byte[] returnBytes;
-            int copyIndex = 0;
+            var copyIndex = 0;
 
-            for (int i = 0; i < values.Length; i++)
+            foreach (var t in values)
             {
-                combinedLength += values[i].Length;
+                combinedLength += t.Length;
             }
 
             returnBytes = new byte[combinedLength];
 
-            for (int i = 0; i < values.Length; i++)
+            for (var i = 0; i < values.Length; i++)
             {
                 Buffer.BlockCopy(values[i], 0, returnBytes, copyIndex, values[i].Length);
                 copyIndex += values[i].Length;
@@ -104,10 +94,10 @@ namespace Amazon.Extensions.CognitoAuthentication.Util
                 throw new ArgumentException("Malformed hexString.", "hexString");
             }
 
-            int stringLen = hexString.Length;
-            byte[] bytes = new byte[stringLen / 2];
+            var stringLen = hexString.Length;
+            var bytes = new byte[stringLen / 2];
 
-            for (int i = 0; i < stringLen; i += 2)
+            for (var i = 0; i < stringLen; i += 2)
             {
                 bytes[i / 2] = Convert.ToByte(hexString.Substring(i, 2), 16);
             }
@@ -122,10 +112,10 @@ namespace Amazon.Extensions.CognitoAuthentication.Util
         /// <returns>Returns a List of AttributeType objects</returns>
         internal static List<AttributeType> CreateAttributeList(IDictionary<string, string> attributeDict)
         {
-            List<AttributeType> attributeList = new List<AttributeType>();
-            foreach (KeyValuePair<string, string> data in attributeDict)
+            var attributeList = new List<AttributeType>();
+            foreach (var data in attributeDict)
             {
-                AttributeType attribute = new AttributeType()
+                var attribute = new AttributeType()
                 {
                     Name = data.Key,
                     Value = data.Value
@@ -142,8 +132,7 @@ namespace Amazon.Extensions.CognitoAuthentication.Util
         private const string UserAgentHeader = "User-Agent";
         internal static void ServiceClientBeforeRequestEvent(object sender, RequestEventArgs e)
         {
-            Amazon.Runtime.WebServiceRequestEventArgs args = e as Amazon.Runtime.WebServiceRequestEventArgs;
-            if (args == null || !args.Headers.ContainsKey(UserAgentHeader))
+            if (!(e is WebServiceRequestEventArgs args) || !args.Headers.ContainsKey(UserAgentHeader))
                 return;
 
             var metric = " AWSDotNetCognito/" + GetAssemblyFileVersion();
@@ -156,7 +145,7 @@ namespace Amazon.Extensions.CognitoAuthentication.Util
         internal static string GetAssemblyFileVersion()
         {
             var assembly = typeof(CognitoAuthHelper).GetTypeInfo().Assembly;
-            AssemblyFileVersionAttribute attribute = assembly.GetCustomAttribute(typeof(AssemblyFileVersionAttribute)) as AssemblyFileVersionAttribute;
+            var attribute = assembly.GetCustomAttribute(typeof(AssemblyFileVersionAttribute)) as AssemblyFileVersionAttribute;
             return attribute == null ? "Unknown" : attribute.Version;
         }
     }

@@ -38,12 +38,12 @@ namespace Amazon.Extensions.CognitoAuthentication.Util
         /// the associated CognitoDevice</returns>
         public static IDictionary<string, string> GenerateVerificationParameters(string deviceKey, string deviceGroup)
         {
-            string deviceSecret = GenerateRandomString();
+            var deviceSecret = GenerateRandomString();
             GenerateDeviceSaltAndVerifier(deviceGroup, deviceKey, deviceSecret);
 
-            byte[] srpVerifier = Verifier.ToByteArray();
+            var srpVerifier = Verifier.ToByteArray();
 
-            Dictionary<string, string> verificationParams = new Dictionary<string, string>()
+            var verificationParams = new Dictionary<string, string>()
             {
                 { "salt", Convert.ToBase64String(Salt) },
                 { "verifier", Convert.ToBase64String(srpVerifier) },
@@ -62,7 +62,7 @@ namespace Amazon.Extensions.CognitoAuthentication.Util
         /// <param name="password">The password for the CognitoUser associated with the device</param>
         public static void GenerateDeviceSaltAndVerifier(string deviceGroupKey, string deviceKey, string password)
         {
-            byte[] deviceKeyHash = GetDeviceKeyHash(deviceGroupKey, deviceKey, password);
+            var deviceKeyHash = GetDeviceKeyHash(deviceGroupKey, deviceKey, password);
 
             Salt = new byte[16];
             using (var cryptoRandom = RandomNumberGenerator.Create())
@@ -80,10 +80,10 @@ namespace Amazon.Extensions.CognitoAuthentication.Util
         /// <returns>Returns the device verifier for the associated CognitoDevice</returns>
         public static BigInteger CalculateVerifier(byte[] salt, byte[] deviceKeyHash)
         {
-            byte[] contentBytes = CognitoAuthHelper.CombineBytes(new byte[][] { salt, deviceKeyHash });
-            byte[] digest = CognitoAuthHelper.Sha256.ComputeHash(contentBytes);
+            var contentBytes = CognitoAuthHelper.CombineBytes(new[] { salt, deviceKeyHash });
+            var digest = CognitoAuthHelper.Sha256.ComputeHash(contentBytes);
 
-            BigInteger x = new BigInteger(digest);
+            var x = new BigInteger(digest);
             return BigInteger.ModPow(x, AuthenticationHelper.g, AuthenticationHelper.N);
         }
 
@@ -96,7 +96,8 @@ namespace Amazon.Extensions.CognitoAuthentication.Util
         /// <returns>Returns the device key hash for the given device</returns>
         public static byte[] GetDeviceKeyHash(string deviceGroupKey, string deviceKey, string password)
         {
-            byte[] contentBytes = CognitoAuthHelper.CombineBytes(new byte[][] { Encoding.UTF8.GetBytes(deviceGroupKey),
+            var contentBytes = CognitoAuthHelper.CombineBytes(new[]
+            { Encoding.UTF8.GetBytes(deviceGroupKey),
                 Encoding.UTF8.GetBytes(deviceKey), Encoding.UTF8.GetBytes(":"), Encoding.UTF8.GetBytes(password) });
 
             return CognitoAuthHelper.Sha256.ComputeHash(contentBytes);

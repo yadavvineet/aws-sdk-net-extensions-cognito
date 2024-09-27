@@ -41,24 +41,24 @@ namespace Amazon.Extensions.CognitoAuthentication
                 throw new ArgumentNullException("Password required for authentication.", "srpRequest");
             }
 
-            Tuple<BigInteger, BigInteger> tupleAa = AuthenticationHelper.CreateAaTuple();
-            InitiateAuthRequest initiateRequest = CreateSrpAuthRequest(tupleAa);
+            var tupleAa = AuthenticationHelper.CreateAaTuple();
+            var initiateRequest = CreateSrpAuthRequest(tupleAa);
 
-            InitiateAuthResponse initiateResponse = await Provider.InitiateAuthAsync(initiateRequest).ConfigureAwait(false);
+            var initiateResponse = await Provider.InitiateAuthAsync(initiateRequest).ConfigureAwait(false);
             UpdateUsernameAndSecretHash(initiateResponse.ChallengeParameters);
 
-            RespondToAuthChallengeRequest challengeRequest =
+            var challengeRequest =
                 CreateSrpPasswordVerifierAuthRequest(initiateResponse, srpRequest.Password, tupleAa);
 
-            bool challengeResponsesValid = challengeRequest != null && challengeRequest.ChallengeResponses != null;
-            bool deviceKeyValid = Device != null && !string.IsNullOrEmpty(Device.DeviceKey);
+            var challengeResponsesValid = challengeRequest != null && challengeRequest.ChallengeResponses != null;
+            var deviceKeyValid = Device != null && !string.IsNullOrEmpty(Device.DeviceKey);
 
             if (challengeResponsesValid && deviceKeyValid)
             {
                 challengeRequest.ChallengeResponses.Add(CognitoConstants.ChlgParamDeviceKey, Device.DeviceKey);
             }
 
-            RespondToAuthChallengeResponse verifierResponse =
+            var verifierResponse =
                 await Provider.RespondToAuthChallengeAsync(challengeRequest).ConfigureAwait(false);
 
             UpdateSessionIfAuthenticationComplete(verifierResponse.ChallengeName, verifierResponse.AuthenticationResult);
@@ -79,7 +79,7 @@ namespace Amazon.Extensions.CognitoAuthentication
         /// if one exists</returns>
         public async Task<AuthFlowResponse> StartWithCustomAuthAsync(InitiateCustomAuthRequest customRequest)
         {
-            InitiateAuthRequest authRequest = new InitiateAuthRequest()
+            var authRequest = new InitiateAuthRequest()
             {
                 AuthFlow = AuthFlowType.CUSTOM_AUTH,
                 AuthParameters = new Dictionary<string, string>(customRequest.AuthParameters),
@@ -87,7 +87,7 @@ namespace Amazon.Extensions.CognitoAuthentication
                 ClientMetadata = new Dictionary<string, string>(customRequest.ClientMetadata)
             };
 
-            InitiateAuthResponse initiateResponse = await Provider.InitiateAuthAsync(authRequest).ConfigureAwait(false);
+            var initiateResponse = await Provider.InitiateAuthAsync(authRequest).ConfigureAwait(false);
             UpdateUsernameAndSecretHash(initiateResponse.ChallengeParameters);
 
             UpdateSessionIfAuthenticationComplete(initiateResponse.ChallengeName, initiateResponse.AuthenticationResult);
@@ -109,7 +109,7 @@ namespace Amazon.Extensions.CognitoAuthentication
         /// if one exists</returns>
         public async Task<AuthFlowResponse> RespondToCustomAuthAsync(RespondToCustomChallengeRequest customRequest)
         {
-            RespondToAuthChallengeRequest request = new RespondToAuthChallengeRequest()
+            var request = new RespondToAuthChallengeRequest()
             {
                 ChallengeName = ChallengeNameType.CUSTOM_CHALLENGE,
                 ClientId = ClientID,
@@ -117,7 +117,7 @@ namespace Amazon.Extensions.CognitoAuthentication
                 Session = customRequest.SessionID
             };
 
-            RespondToAuthChallengeResponse authResponse =
+            var authResponse =
                 await Provider.RespondToAuthChallengeAsync(request).ConfigureAwait(false);
 
             UpdateSessionIfAuthenticationComplete(authResponse.ChallengeName, authResponse.AuthenticationResult);
@@ -139,7 +139,7 @@ namespace Amazon.Extensions.CognitoAuthentication
         /// if one exists</returns>
         public async Task<AuthFlowResponse> RespondToSmsMfaAuthAsync(RespondToSmsMfaRequest smsMfaRequest)
         {
-            RespondToAuthChallengeRequest challengeRequest = new RespondToAuthChallengeRequest
+            var challengeRequest = new RespondToAuthChallengeRequest
             {
                 ChallengeResponses = new Dictionary<string, string>
                     {
@@ -156,7 +156,7 @@ namespace Amazon.Extensions.CognitoAuthentication
                 challengeRequest.ChallengeResponses.Add(CognitoConstants.ChlgParamSecretHash, SecretHash);
             }
 
-            RespondToAuthChallengeResponse challengeResponse =
+            var challengeResponse =
                 await Provider.RespondToAuthChallengeAsync(challengeRequest).ConfigureAwait(false);
 
             UpdateSessionIfAuthenticationComplete(challengeResponse.ChallengeName, challengeResponse.AuthenticationResult);
@@ -201,13 +201,13 @@ namespace Amazon.Extensions.CognitoAuthentication
 
             if (requiredAttributes != null)
             {
-                foreach (KeyValuePair<string, string> attribute in requiredAttributes)
+                foreach (var attribute in requiredAttributes)
                 {
                     challengeResponses.Add(attribute.Key, attribute.Value);
                 }
             }
 
-            RespondToAuthChallengeRequest challengeRequest = new RespondToAuthChallengeRequest
+            var challengeRequest = new RespondToAuthChallengeRequest
             {
                 
                 ChallengeResponses = challengeResponses,
@@ -221,7 +221,7 @@ namespace Amazon.Extensions.CognitoAuthentication
                 challengeRequest.ChallengeResponses.Add(CognitoConstants.ChlgParamSecretHash, SecretHash);
             }
 
-            RespondToAuthChallengeResponse challengeResponse =
+            var challengeResponse =
                 await Provider.RespondToAuthChallengeAsync(challengeRequest).ConfigureAwait(false);
 
             UpdateSessionIfAuthenticationComplete(challengeResponse.ChallengeName, challengeResponse.AuthenticationResult);
@@ -242,9 +242,9 @@ namespace Amazon.Extensions.CognitoAuthentication
         /// if one exists</returns>
         public async Task<AuthFlowResponse> StartWithRefreshTokenAuthAsync(InitiateRefreshTokenAuthRequest refreshTokenRequest)
         {
-            InitiateAuthRequest initiateAuthRequest = CreateRefreshTokenAuthRequest(refreshTokenRequest.AuthFlowType);
+            var initiateAuthRequest = CreateRefreshTokenAuthRequest(refreshTokenRequest.AuthFlowType);
 
-            InitiateAuthResponse initiateResponse =
+            var initiateResponse =
                 await Provider.InitiateAuthAsync(initiateAuthRequest).ConfigureAwait(false);
 
             UpdateSessionIfAuthenticationComplete(initiateResponse.ChallengeName, initiateResponse.AuthenticationResult);
@@ -265,9 +265,9 @@ namespace Amazon.Extensions.CognitoAuthentication
         /// if one exists</returns>
         public async Task<AuthFlowResponse> StartWithAdminNoSrpAuthAsync(InitiateAdminNoSrpAuthRequest adminAuthRequest)
         {
-            AdminInitiateAuthRequest initiateAuthRequest = CreateAdminAuthRequest(adminAuthRequest);
+            var initiateAuthRequest = CreateAdminAuthRequest(adminAuthRequest);
 
-            AdminInitiateAuthResponse initiateResponse =
+            var initiateResponse =
                 await Provider.AdminInitiateAuthAsync(initiateAuthRequest).ConfigureAwait(false);
 
             UpdateSessionIfAuthenticationComplete(initiateResponse.ChallengeName, initiateResponse.AuthenticationResult);
@@ -286,7 +286,7 @@ namespace Amazon.Extensions.CognitoAuthentication
         {
             if (string.IsNullOrEmpty(challengeName))
             {
-                CognitoUserSession cognitoUserSession = GetCognitoUserSession(authResult);
+                var cognitoUserSession = GetCognitoUserSession(authResult);
                 this.SessionTokens = cognitoUserSession;
             }
         }
@@ -298,7 +298,7 @@ namespace Amazon.Extensions.CognitoAuthentication
         /// <returns>Returns the InitiateAuthRequest for an SRP authentication flow</returns>
         private InitiateAuthRequest CreateSrpAuthRequest(Tuple<BigInteger, BigInteger> tupleAa)
         {
-            InitiateAuthRequest initiateAuthRequest = new InitiateAuthRequest()
+            var initiateAuthRequest = new InitiateAuthRequest()
             {
                 AuthFlow = AuthFlowType.USER_SRP_AUTH,
                 ClientId = ClientID,
@@ -329,9 +329,9 @@ namespace Amazon.Extensions.CognitoAuthentication
         /// <param name="challengeParameters">Dictionary containing the key-value pairs for challenge parameters</param>
         private void UpdateUsernameAndSecretHash(IDictionary<string, string> challengeParameters)
         {
-            bool canSetUsername = string.IsNullOrEmpty(Username) || string.Equals(UserID, Username, StringComparison.Ordinal);
-            bool challengeParamIsUsername = challengeParameters != null && challengeParameters.ContainsKey(CognitoConstants.ChlgParamUsername);
-            bool shouldUpdate = canSetUsername || challengeParamIsUsername;
+            var canSetUsername = string.IsNullOrEmpty(Username) || string.Equals(UserID, Username, StringComparison.Ordinal);
+            var challengeParamIsUsername = challengeParameters != null && challengeParameters.ContainsKey(CognitoConstants.ChlgParamUsername);
+            var shouldUpdate = canSetUsername || challengeParamIsUsername;
 
             if (!shouldUpdate)
             {
@@ -351,7 +351,7 @@ namespace Amazon.Extensions.CognitoAuthentication
 
         private AdminInitiateAuthRequest CreateAdminAuthRequest(InitiateAdminNoSrpAuthRequest adminRequest)
         {
-            AdminInitiateAuthRequest returnRequest = new AdminInitiateAuthRequest()
+            var returnRequest = new AdminInitiateAuthRequest()
             {
                 AuthFlow = AuthFlowType.ADMIN_NO_SRP_AUTH,
                 ClientId = ClientID,
@@ -390,7 +390,7 @@ namespace Amazon.Extensions.CognitoAuthentication
                 throw new ArgumentException("authFlowType must be either \"REFRESH_TOKEN\" or \"REFRESH_TOKEN_AUTH\"", "authFlowType");
             }
 
-            InitiateAuthRequest initiateAuthRequest = new InitiateAuthRequest()
+            var initiateAuthRequest = new InitiateAuthRequest()
             {
                 AuthFlow = authFlowType,
                 ClientId = ClientID,
@@ -425,25 +425,25 @@ namespace Amazon.Extensions.CognitoAuthentication
                                                                                    string password,
                                                                                    Tuple<BigInteger, BigInteger> tupleAa)
         {
-            string username = challenge.ChallengeParameters[CognitoConstants.ChlgParamUsername];
-            string poolName = PoolName;
-            string secretBlock = challenge.ChallengeParameters[CognitoConstants.ChlgParamSecretBlock];
-            string salt = challenge.ChallengeParameters[CognitoConstants.ChlgParamSalt];
-            BigInteger srpb = BigIntegerExtensions.FromUnsignedLittleEndianHex(challenge.ChallengeParameters[CognitoConstants.ChlgParamSrpB]);
+            var username = challenge.ChallengeParameters[CognitoConstants.ChlgParamUsername];
+            var poolName = PoolName;
+            var secretBlock = challenge.ChallengeParameters[CognitoConstants.ChlgParamSecretBlock];
+            var salt = challenge.ChallengeParameters[CognitoConstants.ChlgParamSalt];
+            var srpb = BigIntegerExtensions.FromUnsignedLittleEndianHex(challenge.ChallengeParameters[CognitoConstants.ChlgParamSrpB]);
 
             if ((srpb.TrueMod(AuthenticationHelper.N)).Equals(BigInteger.Zero))
             {
                 throw new ArgumentException("SRP error, B mod N cannot be zero.", "challenge");
             }
 
-            DateTime timestamp = DateTime.UtcNow;
-            string timeStr = timestamp.ToString("ddd MMM d HH:mm:ss \"UTC\" yyyy", CultureInfo.InvariantCulture);
+            var timestamp = DateTime.UtcNow;
+            var timeStr = timestamp.ToString("ddd MMM d HH:mm:ss \"UTC\" yyyy", CultureInfo.InvariantCulture);
 
-            byte[] claim = AuthenticationHelper.AuthenticateUser(username, password, poolName, tupleAa, salt,
+            var claim = AuthenticationHelper.AuthenticateUser(username, password, poolName, tupleAa, salt,
                 challenge.ChallengeParameters[CognitoConstants.ChlgParamSrpB], secretBlock, timeStr);
-            string claimBase64 = Convert.ToBase64String(claim);
+            var claimBase64 = Convert.ToBase64String(claim);
 
-            Dictionary<string, string> srpAuthResponses = new Dictionary<string, string>(StringComparer.Ordinal)
+            var srpAuthResponses = new Dictionary<string, string>(StringComparer.Ordinal)
             {
                 {CognitoConstants.ChlgParamPassSecretBlock, secretBlock},
                 {CognitoConstants.ChlgParamPassSignature, claimBase64},
@@ -462,7 +462,7 @@ namespace Amazon.Extensions.CognitoAuthentication
                 srpAuthResponses.Add(CognitoConstants.ChlgParamDeviceKey, Device.DeviceKey);
             }
 
-            RespondToAuthChallengeRequest authChallengeRequest = new RespondToAuthChallengeRequest()
+            var authChallengeRequest = new RespondToAuthChallengeRequest()
             {
                 ChallengeName = challenge.ChallengeName,
                 ClientId = ClientID,
@@ -483,10 +483,10 @@ namespace Amazon.Extensions.CognitoAuthentication
         {
             EnsureUserAuthenticated();
 
-            string poolRegion = UserPool.PoolID.Substring(0, UserPool.PoolID.IndexOf("_"));
-            string providerName = "cognito-idp." + poolRegion + ".amazonaws.com/" + UserPool.PoolID;
+            var poolRegion = UserPool.PoolID.Substring(0, UserPool.PoolID.IndexOf("_"));
+            var providerName = "cognito-idp." + poolRegion + ".amazonaws.com/" + UserPool.PoolID;
 
-            CognitoAWSCredentials credentials = new CognitoAWSCredentials(identityPoolID, identityPoolRegion);
+            var credentials = new CognitoAWSCredentials(identityPoolID, identityPoolRegion);
             credentials.AddLogin(providerName, SessionTokens.IdToken);
 
             return credentials;

@@ -35,7 +35,7 @@ namespace Amazon.Extensions.CognitoAuthentication.IntegrationTests
         [Fact]
         public async Task TestValidSession()
         {
-            AuthFlowResponse context =
+            var context =
                 await user.StartWithSrpAuthAsync(new InitiateSrpAuthRequest()
                 {
                     Password = "PassWord1!"
@@ -48,12 +48,12 @@ namespace Amazon.Extensions.CognitoAuthentication.IntegrationTests
         [Fact]
         public async Task TestGetUserDetails()
         {
-            AuthFlowResponse context =
+            var context =
                 await user.StartWithSrpAuthAsync(new InitiateSrpAuthRequest()
                 {
                     Password = "PassWord1!"
                 }).ConfigureAwait(false);
-            GetUserResponse userDetails = await user.GetUserDetailsAsync().ConfigureAwait(false);
+            var userDetails = await user.GetUserDetailsAsync().ConfigureAwait(false);
 
             Assert.True(string.Equals(userDetails.UserAttributes[2].Name, CognitoConstants.UserAttrEmail, StringComparison.Ordinal));
             Assert.Empty(userDetails.MFAOptions);
@@ -63,7 +63,7 @@ namespace Amazon.Extensions.CognitoAuthentication.IntegrationTests
         [Fact]
         public async Task TestGlobalSignOut()
         {
-            AuthFlowResponse context =
+            var context =
                 await user.StartWithSrpAuthAsync(new InitiateSrpAuthRequest()
                 {
                     Password = "PassWord1!"
